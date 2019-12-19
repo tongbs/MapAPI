@@ -45,7 +45,7 @@ def bus(bus_name,time):
     return data.json()
         
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host = '0.0.0.0', port = 7789,debug=True)
 
 '''
 @app.route('api/zcom/fish', methods=['GET'])
