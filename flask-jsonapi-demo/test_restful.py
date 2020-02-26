@@ -5,6 +5,10 @@ import urllib.parse
 
 import requests
 
+from datetime import datetime
+from sensor_const import airbox_sensor_list
+from sensor_const import airbox_sensor_mac
+
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
@@ -47,10 +51,43 @@ def bus(bus_name,time):
         url = 'https://map.iottalk.tw/secure/history?app_num=92&name=NCTUBus_%s&time=1'%word
     data = requests.get(url)
     return data.json()
-        
+
+class Error(Exception):
+    pass
+
+def airbox_pull_data(url):
+    data = requests.get(url,verify=False)
+    if data.status_code != 200:
+        raise Error(data.text)
+    return data.json()['devices']
+
+@app.route('/api/zcom/<string:air_sensor>', methods=['GET'])
+def air(air_sensor):
+    url = 'https://nctuairbox.edimaxcloud.com:55443/devices?token=c58affa8-b74e-4341-a020-82b4ba776a69'
+    data = airbox_pull_data(url)
+    response = []
+    if data != None and data != []:
+        for devices in data:
+            if devices['id'] in airbox_sensor_mac:
+                for sensor in airbox_sensor_list:
+                    if air_sensor == 'pm2.5'and sensor['FEATURE_NAME'] == 'PM2.5':
+                        response.append({'sensor':sensor['FEATURE_NAME'], 'lat':devices['lat'], 'lon':devices['lon'], 'loc':str(airbox_sensor_mac[devices['id']]['name']), 'value':devices[sensor['NAME_ON_AIRBOX']], 'time':devices['time'] })
+                    elif air_sensor == 'pm10' and sensor['FEATURE_NAME'] == 'PM10':
+                        response.append({'sensor':sensor['FEATURE_NAME'], 'lat':devices['lat'], 'lon':devices['lon'], 'loc':str(airbox_sensor_mac[devices['id']]['name']), 'value':devices[sensor['NAME_ON_AIRBOX']], 'time':devices['time'] })
+    else:
+        print("Airbox data may have some erros!!")
+    return json.dumps(response, ensure_ascii=False, indent = 2)
+
+
+
+
+
+
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 7790,debug=True)
 
+#if __name__ == '__main__':
+#    app.run(debug=True)
 '''
 @app.route('api/zcom/fish', methods=['GET'])
 def fish():
