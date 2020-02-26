@@ -9,13 +9,17 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
-    return {'about':'Hello World!'}
+    return {'Enter':'please enter correct request!'}
 
 @app.route('/api/zcom/fish', methods=['GET'])
 def fish():
-    url = 'http://fish.iottalk.tw:11000/datas/Lab117_Aquarium?limit=1'
-    data = requests.get(url)
-    return data.json()
+    url_login = 'http://iothub.nctu.me:11000/login?next=/datas/BigBlackFish'
+    payload = {'username':'demo','password':'demo'}
+    with requests.session() as s:
+        r = s.post(url_login, data = payload)
+        url = 'http://iothub.nctu.me:11000/datas/BigBlackFish?limit=1'
+        data = s.get(url)
+        return data.json()
 
 @app.route('/api/zcom/farm/<string:farm_name>', methods=['GET'])
 def farm(farm_name):
@@ -45,7 +49,7 @@ def bus(bus_name,time):
     return data.json()
         
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0', port = 7789,debug=True)
+    app.run(host = '0.0.0.0', port = 7790,debug=True)
 
 '''
 @app.route('api/zcom/fish', methods=['GET'])
