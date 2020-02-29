@@ -61,7 +61,7 @@ def airbox_pull_data(url):
         raise Error(data.text)
     return data.json()['devices']
 
-@app.route('/api/zcom/<string:air_sensor>', methods=['GET'])
+@app.route('/api/zcom/air/<string:air_sensor>', methods=['GET'])
 def air(air_sensor):
     url = 'https://nctuairbox.edimaxcloud.com:55443/devices?token=c58affa8-b74e-4341-a020-82b4ba776a69'
     data = airbox_pull_data(url)
