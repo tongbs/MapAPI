@@ -76,8 +76,7 @@ def air(air_sensor):
                         response.append({'sensor':sensor['FEATURE_NAME'], 'lat':devices['lat'], 'lon':devices['lon'], 'loc':str(airbox_sensor_mac[devices['id']]['name']), 'value':devices[sensor['NAME_ON_AIRBOX']], 'time':devices['time'] })
     else:
         print("Airbox data may have some erros!!")
-    return json.dumps(response, ensure_ascii=False, indent = 2)
-
+    return json.dumps(response, ensure_ascii=False, indent = 4,separators=(',',':'))
 
 
 
