@@ -9,6 +9,8 @@ from datetime import datetime
 from sensor_const import airbox_sensor_list
 from sensor_const import airbox_sensor_mac
 
+from cord import Cord as Cord
+
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
@@ -79,8 +81,46 @@ def air(air_sensor):
     return json.dumps(response, ensure_ascii=False, indent = 4,separators=(',',':'))
 
 
+#-----------------------------------------------------------------------------------------------------
+@app.route('/api/iot/covid/<string:type>', methods=['GET'])
+def covid(type):
+    web = requests.get('https://pomber.github.io/covid19/timeseries.json');
+    site_json = json.loads(web.text)
+    result = [];
+    for key in Cord:
+        if type == 'confirmed': 
+            #print(site_json[key][-1]['confirmed'],Cord[key]['name'],Cord[key]['lat'],Cord[key]['lng'],str(site_json[key][-1]['date']),datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            result.append([Cord[key]['name'],Cord[key]['lat'],Cord[key]['lng'],site_json[key][-1]['confirmed'],datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
+        elif type == 'deaths':
+            #print(site_json[key][-1]['deaths'],Cord[key]['name'],Cord[key]['lat'],Cord[key]['lng'],str(site_json[key][-1]['date']),datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            result.append([Cord[key]['name'],Cord[key]['lat'],Cord[key]['lng'],site_json[key][-1]['deaths'],datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
+        elif type == 'recovered':
+            #print(site_json[key][-1]['recovered'],Cord[key]['name'],Cord[key]['lat'],Cord[key]['lng'],str(site_json[key][-1]['date']),datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            result.append([Cord[key]['name'],Cord[key]['lat'],Cord[key]['lng'],site_json[key][-1]['recovered'],datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
+    return json.dumps(result, ensure_ascii=False, indent = 4,separators=(',',':'))
 
 
+@app.route('/api/iot/speed/5s', methods=['GET'])
+def speeds():
+    url_login = 'http://140.113.215.2:25000/login?next=/datas/highway5S'
+    payload = {'username':'admin','password':'admin666'}
+    with requests.session() as s:
+        r = s.post(url_login, data = payload)
+        url = 'http://140.113.215.2:25000/datas/highway5S?limit=1'
+        data = s.get(url)
+        return data.json()
+
+@app.route('/api/iot/speed/5n', methods=['GET'])
+def speedn():
+    url_login = 'http://140.113.215.2:25000/login?next=/datas/highway5N'
+    payload = {'username':'admin','password':'admin666'}
+    with requests.session() as s:
+        r = s.post(url_login, data = payload)
+        url = 'http://140.113.215.2:25000/datas/highway5N?limit=1'
+        data = s.get(url)
+        return data.json()
+
+#--------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0', port = 7790,debug=True)
